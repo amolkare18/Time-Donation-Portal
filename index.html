@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
+  <title>Time Donation Portal</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -21,6 +21,8 @@
 const BACKEND_URL =
   "https://script.google.com/macros/s/AKfycbwEmwbh6HdM1TeAmmHo-f-Ht31cnOLgEGFjc1p2KPZgpiSS7xMUgTi4CXfmygiYbe8IHw/exec";
 
+let currentUserEmail = "";
+
 function handleLogin(response) {
   fetch(BACKEND_URL, {
     method: "POST",
@@ -30,23 +32,21 @@ function handleLogin(response) {
       id_token: response.credential
     })
   })
-  .then(res => res.text())              // ✅ CHANGE
-  .then(text => JSON.parse(text))       // ✅ CHANGE
+  .then(res => res.text())
+  .then(text => JSON.parse(text))
   .then(data => {
     if (data.error) {
       alert(data.error);
       return;
     }
 
+    currentUserEmail = data.email;
+
     if (data.role === "iitb") {
       renderIITBForm(data.email);
     } else {
       renderNonIITBForm(data.email);
     }
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Login failed. Check console.");
   });
 }
 
@@ -82,17 +82,11 @@ function submitForm(type) {
       type: type,
       value: value
     })
-  })
-  .then(res => res.text())              // ✅ CHANGE
-  .then(text => JSON.parse(text))       // ✅ CHANGE
-  .then(() => alert("Saved successfully"))
-  .catch(err => {
-    console.error(err);
-    alert("Submit failed. Check console.");
   });
+
+  alert("Saved successfully");
 }
 </script>
-
 
 </body>
 </html>
