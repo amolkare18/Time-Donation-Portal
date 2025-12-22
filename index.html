@@ -30,7 +30,8 @@ function handleLogin(response) {
       id_token: response.credential
     })
   })
-  .then(res => res.json())
+  .then(res => res.text())              // ✅ CHANGE
+  .then(text => JSON.parse(text))       // ✅ CHANGE
   .then(data => {
     if (data.error) {
       alert(data.error);
@@ -42,6 +43,10 @@ function handleLogin(response) {
     } else {
       renderNonIITBForm(data.email);
     }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Login failed. Check console.");
   });
 }
 
@@ -78,10 +83,16 @@ function submitForm(type) {
       value: value
     })
   })
-  .then(res => res.json())
-  .then(() => alert("Saved successfully"));
+  .then(res => res.text())              // ✅ CHANGE
+  .then(text => JSON.parse(text))       // ✅ CHANGE
+  .then(() => alert("Saved successfully"))
+  .catch(err => {
+    console.error(err);
+    alert("Submit failed. Check console.");
+  });
 }
 </script>
+
 
 </body>
 </html>
