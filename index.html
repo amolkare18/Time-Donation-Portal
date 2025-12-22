@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<h2>Login</h2>
+
+<div id="g_id_onload"
+     data-client_id="656602297566-jeksmvl1n1uef5mq8h958gducrrkga5n.apps.googleusercontent.com"
+     data-callback="handleLogin">
+</div>
+
+<div class="g_id_signin"></div>
+
+<div id="app"></div>
+
+<script>
+const BACKEND_URL =
+  "https://script.google.com/macros/s/AKfycbwEmwbh6HdM1TeAmmHo-f-Ht31cnOLgEGFjc1p2KPZgpiSS7xMUgTi4CXfmygiYbe8IHw/exec";
+
+function handleLogin(response) {
+  fetch(BACKEND_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      action: "login",
+      id_token: response.credential
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+
+    if (data.role === "iitb") {
+      renderIITBForm(data.email);
+    } else {
+      renderNonIITBForm(data.email);
+    }
+  });
+}
+
+function renderIITBForm(email) {
+  document.getElementById("app").innerHTML = `
+    <h3>Signed in as ${email}</h3>
+    <h4>IITB Alumni Form</h4>
+    <input id="skill" placeholder="Your Skill"><br><br>
+    <button onclick="submitForm('iitb')">Submit</button>
+  `;
+}
+
+function renderNonIITBForm(email) {
+  document.getElementById("app").innerHTML = `
+    <h3>Signed in as ${email}</h3>
+    <h4>General Contributor Form</h4>
+    <input id="interest" placeholder="Your Interest"><br><br>
+    <button onclick="submitForm('non-iitb')">Submit</button>
+  `;
+}
+
+function submitForm(type) {
+  const value =
+    type === "iitb"
+      ? document.getElementById("skill").value
+      : document.getElementById("interest").value;
+
+  fetch(BACKEND_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      action: "submit",
+      type: type,
+      value: value
+    })
+  })
+  .then(res => res.json())
+  .then(() => alert("Saved successfully"));
+}
+</script>
+
+</body>
+</html>
