@@ -91,7 +91,7 @@ function commonFieldsHTML() {
   return `
     <input id="name" placeholder="Name of Alum">
     <input id="batch" placeholder="Batch / Department">
-    <input id="email" value="${currentUser.email}" readonly>
+    <input id="email" placeholder="Email Address">
     <input id="mobile" placeholder="Mobile Number">
     <input id="domain" placeholder="Professional Domain">
     <input id="expertise" placeholder="Other areas of interest / expertise">
@@ -129,7 +129,21 @@ function submitForm(role) {
     body: JSON.stringify(payload)
   })
   .then(res => res.json())
-  .then(() => alert("Saved successfully"));
+  .then(() => {alert("Response Saved successfully");
+    if (role === "iitb") {
+      renderIITBForm();
+    } else {
+      renderNonIITBForm();
+    }
+
+
+
+
+
+
+
+   
+  });
 }
 </script>
 
