@@ -3,6 +3,16 @@
 <head>
   <title>Time Donation Portal</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    input, textarea {
+      width: 95%;
+      margin-bottom: 10px;
+      padding: 6px;
+    }
+    button {
+      padding: 8px 16px;
+    }
+  </style>
 </head>
 <body>
 
@@ -21,7 +31,7 @@
 const BACKEND_URL =
   "https://script.google.com/macros/s/AKfycbwEmwbh6HdM1TeAmmHo-f-Ht31cnOLgEGFjc1p2KPZgpiSS7xMUgTi4CXfmygiYbe8IHw/exec";
 
-let currentUserEmail = "";
+let currentUser = {};
 
 function handleLogin(response) {
   fetch(BACKEND_URL, {
@@ -32,59 +42,94 @@ function handleLogin(response) {
       id_token: response.credential
     })
   })
-  .then(res => res.text())
-  .then(text => JSON.parse(text))
+  .then(res => res.json())
   .then(data => {
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
+    if (data.error) return alert(data.error);
 
-    currentUserEmail = data.email;
+    currentUser = data;
 
     if (data.role === "iitb") {
-      renderIITBForm(data.email);
+      renderIITBForm();
     } else {
-      renderNonIITBForm(data.email);
+      renderNonIITBForm();
     }
   });
 }
 
-function renderIITBForm(email) {
+/* =========================
+   IITB FORM RENDERING
+   ========================= */
+function renderIITBForm() {
   document.getElementById("app").innerHTML = `
-    <h3>Signed in as ${email}</h3>
-    <h4>IITB Alumni Form</h4>
-    <input id="skill" placeholder="Your Skill"><br><br>
-    <button onclick="submitForm('iitb')">Submit</button>
+    <h3>Signed in as ${currentUser.email}</h3>
+    <h3>IITB Alumni Contribution Form</h3>
+
+    ${commonFieldsHTML()}
+
+    <button onclick="submitForm('iitb')">Submit IITB Form</button>
   `;
 }
 
-function renderNonIITBForm(email) {
+/* =========================
+   NON-IITB FORM RENDERING
+   ========================= */
+function renderNonIITBForm() {
   document.getElementById("app").innerHTML = `
-    <h3>Signed in as ${email}</h3>
-    <h4>General Contributor Form</h4>
-    <input id="interest" placeholder="Your Interest"><br><br>
-    <button onclick="submitForm('non-iitb')">Submit</button>
+    <h3>Signed in as ${currentUser.email}</h3>
+    <h3>General Contributor Form</h3>
+
+    ${commonFieldsHTML()}
+
+    <button onclick="submitForm('non-iitb')">Submit General Form</button>
   `;
 }
 
-function submitForm(type) {
-  const value =
-    type === "iitb"
-      ? document.getElementById("skill").value
-      : document.getElementById("interest").value;
+/* =========================
+   COMMON FIELDS (REUSED)
+   ========================= */
+function commonFieldsHTML() {
+  return `
+    <input id="name" placeholder="Name of Alum">
+    <input id="batch" placeholder="Batch / Department">
+    <input id="email" value="${currentUser.email}" readonly>
+    <input id="mobile" placeholder="Mobile Number">
+    <input id="domain" placeholder="Professional Domain">
+    <input id="expertise" placeholder="Other areas of interest / expertise">
+    <input id="contribution" placeholder="Area of Contribution (Skill / Mentorship / Guidance)">
+    <textarea id="description" placeholder="Description of Time Deposit"></textarea>
+    <input id="hours" placeholder="Estimated Hours You Wish to Deposit">
+    <input id="availability" placeholder="Preferred Time Slots / Availability">
+    <textarea id="notes" placeholder="Any Additional Notes"></textarea>
+  `;
+}
+
+/* =========================
+   SUBMIT
+   ========================= */
+function submitForm(role) {
+  const payload = {
+    action: "submit",
+    role: role,
+    name: document.getElementById("name").value,
+    batch: document.getElementById("batch").value,
+    email: document.getElementById("email").value,
+    mobile: document.getElementById("mobile").value,
+    domain: document.getElementById("domain").value,
+    expertise: document.getElementById("expertise").value,
+    contribution: document.getElementById("contribution").value,
+    description: document.getElementById("description").value,
+    hours: document.getElementById("hours").value,
+    availability: document.getElementById("availability").value,
+    notes: document.getElementById("notes").value
+  };
 
   fetch(BACKEND_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      action: "submit",
-      type: type,
-      value: value
-    })
-  });
-
-  alert("Saved successfully");
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(() => alert("Saved successfully"));
 }
 </script>
 
